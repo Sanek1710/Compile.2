@@ -1,0 +1,29 @@
+первична€ инициализаци€ git репозитори€:
+git init
+
+добавить файл или папку в отслеживание:
+git add .
+git add [filename]
+
+создать коммит из всех файлов/конкретных:
+git commit -m "Your Comment" -a
+git commit -m "Your Comment" [filename]
+
+добавить удаленный репозиторий:
+git remote add origin https://github.com/Sanek1710/test.git
+
+список удаленных репозиториев:
+git remote -v
+	
+отправить изменени€:
+git push origin master
+
+
+показать ветви:
+git branch -a
+
+создать ветвь
+git checkout -b [brunch name]
+
+переключение между ветв€ми:
+git checkout [brunch name]
