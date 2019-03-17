@@ -9,23 +9,24 @@ extern int yylex (void);
 
 %}
 
+%union { int num; char id; }
+
 %start CODE
-%token DECNUM
-%token OCTNUM
-%token HEXNUM
-%token WHILE
-%token IF 
-%token ELSE
-%token PRINT
-%token RETURN
-%token VAR  
-%token INC  
-%token DEC  
-%token CMP
-%token LINOP
-%token EVEQ
-%token UNOOP
-%token BINOP
+%token <num> Num
+%token While
+%token If 
+%token Else
+%token Print
+%token Return
+%token Var 
+
+%token Inc Dec
+%token Mvadd Mvsub Mvmlt Mvdiv Mvmod Mvor Mvand Mvxor Mvlsh Mvrsh
+%token Add Sub Mlt Div Mod Lsh Rsh
+%token Moreq Leseq Equal Noteq More Less
+%token Move
+%token Or And Not
+%token Bitor Bitand Bitxor Bitnot
 
 %%
 
@@ -36,17 +37,17 @@ TEXT    : BLOCK
         | TEXT BLOCK
         ;
 
-tWHILE  : WHILE '(' XEXP ')' BLOCK
+WHILE   : While '(' EXP ')' BLOCK
         ;
 
-tIF     : IF '(' XEXP ')' BLOCK
-        | IF '(' XEXP ')' BLOCK ELSE BLOCK
+IF      : If '(' EXP ')' BLOCK
+        | If '(' EXP ')' BLOCK Else BLOCK
         ;
 
 BLOCK   : SCOPE
         | LINE
-        | tWHILE
-        | tIF
+        | WHILE
+        | IF
         ;
 
 SCOPE   : '{' '}'
@@ -54,49 +55,87 @@ SCOPE   : '{' '}'
         ;
 
 LINE    : ';'
-        | XEXP ';'
-        | PRINT XEXP ';'
-        | RETURN ';'
+        | EXP ';'
+        | Print EXP ';'
+        | Return ';'
         ;
 
-XEXP    : LEXP
-        | REXP
+EXP     : LVAL Move  EXP  { printf("= "); }
+        | LVAL Mvadd EXP
+        | LVAL Mvsub EXP
+        | LVAL Mvmlt EXP
+        | LVAL Mvdiv EXP
+        | LVAL Mvmod EXP
+        | LVAL Mvor  EXP
+        | LVAL Mvand EXP
+        | LVAL Mvxor EXP
+        | LVAL Mvlsh EXP
+        | LVAL Mvrsh EXP
+        | EXP0
         ;
 
-LEXP    : LVAL
-        | LVAL EVEQ XEXP
-        | '(' LEXP ')'
+EXP0    : EXP0 Or     EXP1  
+        | EXP1 
+        ;
+EXP1    : EXP1 And    EXP2  
+        | EXP2 
+        ;
+EXP2    : EXP2 Bitor  EXP3  
+        | EXP3 
+        ;
+EXP3    : EXP3 Bitxor EXP4  
+        | EXP4 
+        ;
+EXP4    : EXP4 Bitand EXP5  
+        | EXP5 
+        ;
+EXP5    : EXP5 Equal  EXP6  
+        | EXP5 Noteq  EXP6   
+        | EXP6 
+        ;
+EXP6    : EXP6 Less   EXP7  
+        | EXP6 More   EXP7   
+        | EXP6 Moreq  EXP7   
+        | EXP6 Leseq  EXP7 
+        | EXP7 
+        ;
+EXP7    : EXP7 Lsh    EXP8  
+        | EXP7 Rsh    EXP8   
+        | EXP8 
+        ;
+EXP8    : EXP8 Add    EXP9  { printf("+ "); }
+        | EXP8 Sub    EXP9  { printf("- "); }
+        | EXP9 
+        ;
+EXP9    : EXP9 Mlt    EXP10 { printf("* "); }
+        | EXP9 Div    EXP10  
+        | EXP9 Mod    EXP10  
+        | EXP10 
+        ;
+EXP10   : XVAL 
+        | '(' EXP0 ')' 
+        | Add EXP10
+        | Sub EXP10
+        | Not EXP10
+        | Bitnot EXP10
         ;
 
-REXP    : RVAL
-        | UNOOP REXP
-        | LINOP REXP
-        | XEXP BINOP XEXP
-        | XEXP LINOP XEXP
-        | XEXP CMP XEXP
-        | '(' REXP ')'
+XVAL    : RVAL 
+        | LVAL
         ;
 
-LVAL    : VAR
-        | INC LVAL
-        | DEC LVAL
+RVAL    : Var          Inc  
+        | Var          Dec
+        | '(' LVAL ')' Inc  
+        | '(' LVAL ')' Dec
+        | Num          { printf("%d", $1); }
+        ;
+
+LVAL    : Var
+        | Inc LVAL          
+        | Dec LVAL
         | '(' LVAL ')'
         ;
-
-RVAL    : NUM
-        | LVAL DEC
-        | LVAL INC
-        | UNOOP LVAL
-        | LINOP LVAL
-        | '(' RVAL ')'
-        ;
-
-NUM     : DECNUM
-        | OCTNUM
-        | HEXNUM
-        | '(' NUM ')'
-        ;
-        
 %%
 
 int
