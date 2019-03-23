@@ -1,7 +1,7 @@
 all: comp
 
 comp: y.tab.c lex.yy.c
-	gcc y.tab.c lex.yy.c -o comp
+	gcc y.tab.c lex.yy.c varlist.h -o comp
 
 y.tab.c: comp.y
 	yacc -d comp.y
