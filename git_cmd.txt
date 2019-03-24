@@ -10,7 +10,7 @@ git commit -m "Your Comment" -a
 git commit -m "Your Comment" [filename]
 
 добавить удаленный репозиторий:
-git remote add origin https://github.com/Sanek1710/test.git
+git remote add origin https://github.com/Sanek1710/Compile.2.git
 
 список удаленных репозиториев:
 git remote -v
