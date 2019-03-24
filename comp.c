@@ -36,6 +36,9 @@ yywrap()
   return(1);
 }
 
+int MARK_NUM = 0;
+char MARK[128];
+
 
 int FREE = 2;
 int IN_MEM = 0;
@@ -65,6 +68,19 @@ MOV(const char *str, TERM_TYPE type)
     }
 }
 
+char *
+NEW_MARK()
+{
+    sprintf(MARK, "mark_%03d", MARK_NUM++);
+    return MARK;
+}
+
+char *
+LAST_MARK()
+{
+  return MARK;
+}
+
 void
 OP(int op_id)
 {
@@ -79,9 +95,166 @@ OP(int op_id)
     const char * reg_lft = reg[CUR_REG_NUM];
     const char * reg_rgt = reg[(CUR_REG_NUM + 1)%2];
 
-    printf("%d  %s, %s\n", op_id, reg_lft, reg_rgt);
+    switch(op_id)
+    {
+      case Add:
+      {
+        printf("add  %s, %s\n", reg_lft, reg_rgt);
+      } break;
+
+      case Sub:
+      {
+        printf("sub  %s, %s\n", reg_lft, reg_rgt);
+      } break;
+
+      case Mlt:
+      {
+        printf("mlt  %s, %s\n", reg_lft, reg_rgt);
+      } break;
+
+      case Div:
+      {
+        printf("div  %s, %s\n", reg_lft, reg_rgt);
+      } break;
+
+      case Mod:
+      {
+        printf("div  %s, %s\n", reg_lft, reg_rgt);
+        printf("mov  %s, %s\n", reg_lft, reg_rgt);
+      } break;
+
+      case Lsh:
+      {
+        printf("shl  %s, %s\n", reg_lft, reg_rgt);
+      } break;
+
+      case Rsh:
+      {
+        printf("shr  %s, %s\n", reg_lft, reg_rgt);
+      } break;
+
+      case Moreq:
+      {
+        printf("cmp  %s, %s\n", reg_lft, reg_rgt);
+        printf("jl   .+0x0A\n");
+        printf("mov  %s, 1\n", reg_lft);
+        printf("jmp  .+0x08\n");
+        printf("mov  %s, 0\n", reg_lft);
+      } break;
+
+      case Leseq:
+      {
+        printf("cmp  %s, %s\n", reg_lft, reg_rgt);
+        printf("jg   .+0x0A\n");
+        printf("mov  %s, 1\n", reg_lft);
+        printf("jmp  .+0x08\n");
+        printf("mov  %s, 0\n", reg_lft);
+      } break;
+
+      case Equal:
+      {
+        printf("cmp  %s, %s\n", reg_lft, reg_rgt);
+        printf("jne  .+0x0A\n");
+        printf("mov  %s, 1\n", reg_lft);
+        printf("jmp  .+0x08\n");
+        printf("mov  %s, 0\n", reg_lft);
+      } break;
+
+      case Noteq:
+      {
+        printf("cmp  %s, %s\n", reg_lft, reg_rgt);
+        printf("je   .+0x0A\n");
+        printf("mov  %s, 1\n", reg_lft);
+        printf("jmp  .+0x08\n");
+        printf("mov  %s, 0\n", reg_lft);
+      } break;
+
+      case More:
+      {
+        printf("cmp  %s, %s\n", reg_lft, reg_rgt);
+        printf("jle  .+0x0A\n");
+        printf("mov  %s, 1\n", reg_lft);
+        printf("jmp  .+0x08\n");
+        printf("mov  %s, 0\n", reg_lft);
+      } break;
+
+      case Less:
+      {
+        printf("cmp  %s, %s\n", reg_lft, reg_rgt);
+        printf("jge  .+0x0A\n");
+        printf("mov  %s, 1\n", reg_lft);
+        printf("jmp  .+0x08\n");
+        printf("mov  %s, 0\n", reg_lft);
+      } break;
+
+      case Or:
+      {
+        printf("tst  %s\n", reg_lft);
+        printf("jne  .+0x0E\n");
+        printf("tst  %s\n", reg_rgt);
+        printf("jne  .+0x0A\n");
+        printf("mov  %s, 0\n", reg_lft);
+        printf("jmp  .+0x08\n");
+        printf("mov  %s, 1\n", reg_lft);
+      } break;
+
+      case And:
+      {
+        printf("tst  %s\n", reg_lft);
+        printf("je   .+0x0E\n");
+        printf("tst  %s\n", reg_rgt);
+        printf("je   .+0x0A\n");
+        printf("mov  %s, 1\n", reg_lft);
+        printf("jmp  .+0x08\n");
+        printf("mov  %s, 0\n", reg_lft);
+      } break;
+
+      case Bitor:
+      {
+        printf("or   %s, %s\n", reg_lft, reg_rgt);
+      } break;
+
+      case Bitand:
+      {
+        printf("and  %s, %s\n", reg_lft, reg_rgt);
+      } break;
+
+      case Bitxor:
+      {
+        printf("xor  %s, %s\n", reg_lft, reg_rgt);
+      } break;
+    }
 
     FREE++;
+} 
+
+void
+UNOOP(int op_id)
+{
+  switch(op_id)
+  {
+    case Sub:
+    {
+      printf("neg  %s\n", CUR_REG());
+    } break;
+
+    case Bitnot:
+    {
+      printf("not  %s\n", CUR_REG());
+    } break;
+
+    case Not:
+    {
+      printf("tst  %s\n", CUR_REG());
+      printf("jne  .+0x0A\n");
+      printf("mov  %s, 1\n", CUR_REG());
+      printf("jmp  .+0x08\n");
+      printf("mov  %s, 0\n", CUR_REG());
+    } break;
+    
+    case Add:
+    default: break;
+  }
 }
 
 const char *

@@ -22,6 +22,7 @@ typedef enum TERM_TYPE
 
 void MOV(const char *str, TERM_TYPE type);
 void OP(int op_id);
+void UNOOP(int op_id);
 void PREF(int op_id, const char *var);
 void POST(int op_id, const char *var);
 void RESET_EXP();

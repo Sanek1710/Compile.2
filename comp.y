@@ -110,10 +110,10 @@ EXP9    : EXP9 Mlt    EXP10     { OP(Mlt); }
         ;
 EXP10   : XVAL                  { }
         | '(' EXP0 ')'          { }
-        | Add EXP10             { }
-        | Sub EXP10             { printf("-    %s\n", CUR_REG()); }
-        | Not EXP10             { printf("!    %s\n", CUR_REG()); }
-        | Bitnot EXP10          { printf("~    %s\n", CUR_REG()); }
+        | Add EXP10             { UNOOP(Add); }
+        | Sub EXP10             { UNOOP(Sub); }
+        | Not EXP10             { UNOOP(Not); }
+        | Bitnot EXP10          { UNOOP(Bitnot); }
         ;
 
 XVAL    : RVAL                  { }
