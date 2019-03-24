@@ -7,7 +7,7 @@ int atoui_oct(const char *str);
 int atoui_hex(const char *str);
 int check_num(int num);
 
-%} 
+%}
 
 
 %%
@@ -129,7 +129,7 @@ atoui_hex(const char *str)
 
 int check_num(int num)
 {
-	if (num < 0) 
+	if (num < 0)
 	{
 		yyerror("int overflow");
 		return 0;
