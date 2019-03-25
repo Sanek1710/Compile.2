@@ -1,6 +1,9 @@
 #include "comp.h"
 #include "y.tab.h"
 
+int MARK_NUM = 0;
+
+
 int
 main(int argc, const char *argv[])
 {
@@ -16,10 +19,17 @@ main(int argc, const char *argv[])
     yyset_in (f);
   }
 
+  MARK_FRST = stack_new();
+  MARK_SCND = stack_new();
+
   int Res = yyparse();
 
   if (Res == 0) printf("OK \n");
   else printf("HE OK\n");
+
+  stack_delete(&MARK_FRST);
+  stack_delete(&MARK_SCND);
+
 
   return(Res);
 }
@@ -35,9 +45,6 @@ yywrap()
 {
   return(1);
 }
-
-int MARK_NUM = 0;
-char MARK[128];
 
 
 int FREE = 2;
@@ -68,17 +75,22 @@ MOV(const char *str, TERM_TYPE type)
     }
 }
 
-char *
-NEW_MARK()
+void
+PUSH_MARK(STACK *st)
 {
-    sprintf(MARK, "mark_%03d", MARK_NUM++);
-    return MARK;
+  stack_push(st, MARK_NUM);
+  MARK_NUM++;
 }
 
-char *
-LAST_MARK()
+int
+POP_MARK(STACK *st)
 {
-  return MARK;
+  return stack_pop(st);
+}
+
+int  LAST_MARK()
+{
+  return MARK_NUM - 1;
 }
 
 void

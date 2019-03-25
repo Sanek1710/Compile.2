@@ -32,11 +32,35 @@ TEXT    : BLOCK
         | TEXT BLOCK
         ;
 
-WHILE   : While '(' EXP ')' BLOCK
+WHILE   : WHCOND BLOCK            { printf("jmp mark_%03d\n", POP_MARK(&MARK_FRST)); 
+                                    printf("__mark_%03d:\n", POP_MARK(&MARK_SCND)); 
+                                    }
         ;
 
-IF      : If '(' EXP ')' BLOCK
-        | If '(' EXP ')' BLOCK Else BLOCK
+WHCOND  : WHIL '(' EXP ')'        { RESET_EXP(); 
+                                    PUSH_MARK(&MARK_SCND); 
+                                    printf("tst eax\n"); 
+                                    printf("je mark_%03d\n", LAST_MARK()); 
+                                  } 
+        ;
+
+WHIL    : While                   { PUSH_MARK(&MARK_FRST); printf("__mark_%03d:\n", LAST_MARK()); }
+        ;
+
+IF      : IFCOND BLOCK            { printf("__mark_%03d:\n", POP_MARK(&MARK_FRST)); }
+        | IFCOND BLOCK ELSE BLOCK { printf("__mark_%03d:\n", POP_MARK(&MARK_SCND)); }
+        ;
+
+ELSE    : Else                    { PUSH_MARK(&MARK_SCND);
+                                    printf("jmp mark_%03d\n", LAST_MARK());
+                                    printf("__mark_%03d:\n", POP_MARK(&MARK_FRST)); }
+        ;
+
+IFCOND  : If '(' EXP ')'          { RESET_EXP(); 
+                                    PUSH_MARK(&MARK_FRST);
+                                    printf("tst eax\n");
+                                    printf("je mark_%03d\n", LAST_MARK());
+                                  }
         ;
 
 BLOCK   : SCOPE
@@ -51,12 +75,12 @@ SCOPE   : '{' '}'
 
 LINE    : ';'                   { RESET_EXP(); }
         | EXP ';'               { RESET_EXP(); }
-        | Print EXP ';'         { RESET_EXP(); }
-        | Return ';'            { RESET_EXP(); }
+        | Print EXP ';'         { RESET_EXP(); printf("call print\n"); }
+        | Return ';'            { RESET_EXP(); printf("ret\n"); }
         ;
 
-EXP     : Var  Move  EXP        { printf("mov  [%s], %s", $1, CUR_REG()); }
-        | LVAL Move  EXP        { printf("mov  [%s], %s", $1, CUR_REG()); }
+EXP     : Var  Move  EXP        { printf("mov  [%s], %s\n", $1, CUR_REG()); }
+        | LVAL Move  EXP        { printf("mov  [%s], %s\n", $1, CUR_REG()); }
         | LVAL Mvadd EXP        { OP(Mvadd); printf("mov  [%s], %s\n", $1, CUR_REG()); }
         | LVAL Mvsub EXP        { OP(Mvsub); printf("mov  [%s], %s\n", $1, CUR_REG()); }
         | LVAL Mvmlt EXP        { OP(Mvmlt); printf("mov  [%s], %s\n", $1, CUR_REG()); }
