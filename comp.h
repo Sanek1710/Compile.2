@@ -23,7 +23,9 @@ typedef enum TERM_TYPE
 	t_var
 }TERM_TYPE;
 
-void MOV(const char *str, TERM_TYPE type);
+void PUSH(const char *arg);
+void POP (const char *arg);
+void MOV (const char *str, TERM_TYPE type);
 void OP(int op_id);
 void UNOOP(int op_id);
 void PREF(int op_id, const char *var);

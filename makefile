@@ -11,3 +11,7 @@ lex.yy.c: comp.l
 
 clean:
 	rm comp lex.yy.c y.tab.h y.tab.c
+
+
+rebuild: clean all
+	

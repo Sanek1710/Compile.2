@@ -3,7 +3,6 @@
 
 int MARK_NUM = 0;
 
-
 int
 main(int argc, const char *argv[])
 {
@@ -53,6 +52,23 @@ int IN_MEM = 0;
 const char *reg[2] = { "eax", "ebx" };
 int CUR_REG_NUM = 0;
 
+int BASE = 0;
+int OFFSET = 0;
+
+void
+PUSH(const char *arg)
+{
+  printf("mov  [0x%02X], %s\n", BASE + OFFSET, arg);
+  OFFSET += 4;
+}
+
+void
+POP(const char *arg)
+{
+  OFFSET -= 4;
+  printf("mov  %s, [0x%02X]\n", arg, BASE + OFFSET);
+}
+
 void
 MOV(const char *str, TERM_TYPE type)
 {
@@ -63,7 +79,7 @@ MOV(const char *str, TERM_TYPE type)
     if (!FREE)
     {
         CUR_REG_NUM = IN_MEM%2;
-        printf("push %s\n", reg[CUR_REG_NUM]);
+        PUSH(reg[CUR_REG_NUM]);
         printf(format, reg[CUR_REG_NUM], str);
         IN_MEM++;
     }
@@ -100,7 +116,8 @@ OP(int op_id)
     {
         FREE--;
         IN_MEM--;
-        printf("pop  %s\n", reg[IN_MEM%2]);
+        POP(reg[IN_MEM%2]);
+
     }
 
     CUR_REG_NUM = IN_MEM%2;
@@ -278,21 +295,24 @@ CUR_REG()
 void
 RESET_EXP()
 {
-    IN_MEM = 0; FREE = 2;
+    IN_MEM = 0; 
+    FREE = 2;
 }
 
 void
 PREF(int op_id, const char *var)
 {
-    printf("%d  %s\n", op_id, CUR_REG());
+    const char *op = (op_id == Inc) ? "add" : "sub";
+    printf("%s  %s, 1\n", op, CUR_REG());
     printf("mov  [%s], %s\n", var, CUR_REG());
 }
 
 void
 POST(int op_id, const char *var)
 {
-    printf("push %s\n", CUR_REG());
-    printf("%d  %s\n", op_id, CUR_REG());
+    const char *op = (op_id == Inc) ? "add" : "sub";
+    PUSH(CUR_REG());
+    printf("%s  %s, 1\n", op, CUR_REG());
     printf("mov  [%s], %s\n", var, CUR_REG());
-    printf("pop %s\n", CUR_REG());
+    POP(CUR_REG());
 }
